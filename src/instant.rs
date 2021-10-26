@@ -123,18 +123,38 @@ mod tests {
 
     #[test]
     fn i64_conversion_test() -> anyhow::Result<()> {
-        assert!(Instant::try_from(i64::from(Instant::min()) - 1_i64).is_err());
+        // Instant -> i64
         assert_eq!(i64::from(Instant::min()), 0_i64);
         assert_eq!(i64::from(Instant::max()), 253_402_300_799_i64);
+        // i64 -> Instant
+        assert!(Instant::try_from(i64::MIN).is_err());
+        assert!(Instant::try_from(i64::from(Instant::min()) - 1_i64).is_err());
+        assert_eq!(
+            Instant::try_from(i64::from(Instant::min()))?,
+            Instant::try_from(0_u64)?
+        );
+        assert_eq!(
+            Instant::try_from(i64::from(Instant::max()))?,
+            Instant::try_from(253_402_300_799_u64)?
+        );
         assert!(Instant::try_from(i64::from(Instant::max()) + 1_i64).is_err());
+        assert!(Instant::try_from(i64::MAX).is_err());
         Ok(())
     }
 
     #[test]
     fn u64_conversion_test() -> anyhow::Result<()> {
+        // Instant -> u64
         assert_eq!(u64::from(Instant::min()), 0_u64);
         assert_eq!(u64::from(Instant::max()), 253_402_300_799_u64);
+        // u64 -> Instant
+        assert_eq!(Instant::try_from(u64::MIN)?, Instant::try_from(0_u64)?);
+        assert_eq!(
+            Instant::try_from(u64::from(Instant::max()))?,
+            Instant::try_from(253_402_300_799_u64)?
+        );
         assert!(Instant::try_from(u64::from(Instant::max()) + 1_u64).is_err());
+        assert!(Instant::try_from(u64::MAX).is_err());
         Ok(())
     }
 
