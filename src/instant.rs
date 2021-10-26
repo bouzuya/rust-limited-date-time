@@ -57,6 +57,14 @@ impl std::str::FromStr for Instant {
     }
 }
 
+impl std::convert::TryFrom<Instant> for u16 {
+    type Error = TryFromInstantError;
+
+    fn try_from(value: Instant) -> Result<Self, Self::Error> {
+        u16::try_from(value.0).map_err(|_| TryFromInstantError::OutOfRange)
+    }
+}
+
 impl std::convert::TryFrom<Instant> for u32 {
     type Error = TryFromInstantError;
 
@@ -98,6 +106,12 @@ impl From<Instant> for i64 {
 impl From<Instant> for u64 {
     fn from(instant: Instant) -> Self {
         instant.0
+    }
+}
+
+impl From<u16> for Instant {
+    fn from(value: u16) -> Self {
+        Self(u64::from(value))
     }
 }
 
@@ -153,6 +167,19 @@ mod tests {
         );
         assert!(Instant::try_from(i64::from(Instant::max()) + 1_i64).is_err());
         assert!(Instant::try_from(i64::MAX).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn u16_conversion_test() -> anyhow::Result<()> {
+        // Instant -> u16
+        assert_eq!(u16::try_from(Instant::min())?, 0_u16);
+        assert_eq!(u16::try_from(Instant::from(u16::MAX))?, u16::MAX);
+        assert!(u16::try_from(Instant::from(u32::from(u16::MAX) + 1)).is_err());
+        assert!(u16::try_from(Instant::max()).is_err());
+        // u16 -> Instant
+        assert_eq!(Instant::from(u16::MIN), Instant::min());
+        assert_eq!(Instant::from(u16::MAX), Instant::from(65_535_u16));
         Ok(())
     }
 
