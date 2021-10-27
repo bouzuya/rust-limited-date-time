@@ -6,7 +6,10 @@ use std::{
 
 use thiserror::Error;
 
-use crate::{Days, Seconds};
+use crate::{
+    private::{date_time_string_from_timestamp, timestamp_from_date_time_string},
+    Days, Seconds,
+};
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Instant(u64);
@@ -63,7 +66,11 @@ pub enum TryFromInstantError {
 
 impl std::fmt::Display for Instant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        let mut s =
+            date_time_string_from_timestamp(i64::try_from(self.0).map_err(|_| std::fmt::Error)?)
+                .map_err(|_| std::fmt::Error)?;
+        s.push('Z');
+        write!(f, "{}", s)
     }
 }
 
@@ -71,9 +78,11 @@ impl std::str::FromStr for Instant {
     type Err = ParseInstantError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let timestamp = s
-            .parse::<u64>()
-            .map_err(|_| ParseInstantError::InvalidFormat)?;
+        let s = s
+            .strip_suffix('Z')
+            .ok_or(ParseInstantError::InvalidFormat)?;
+        let timestamp =
+            timestamp_from_date_time_string(s).map_err(|_| ParseInstantError::InvalidFormat)?;
         Instant::try_from(timestamp).map_err(|_| ParseInstantError::OutOfRange)
     }
 }
@@ -283,17 +292,15 @@ mod tests {
     }
 
     #[test]
-    fn str_conversion_test() {
-        type E = ParseInstantError;
-        let f = |s: &str| Instant::from_str(s);
-
-        assert!(matches!(f("0"), Ok(_)));
-        assert!(matches!(f("253402300799"), Ok(_)));
-        assert!(matches!(f("a"), Err(E::InvalidFormat)));
-        assert!(matches!(f("18446744073709551616"), Err(E::InvalidFormat)));
-        assert!(matches!(f("253402300800"), Err(E::OutOfRange)));
-
-        assert_eq!(f("0").map(|d| d.to_string()), Ok("0".to_string()));
+    fn str_conversion_test() -> anyhow::Result<()> {
+        assert_eq!(Instant::from_str("1970-01-01T00:00:00Z")?, Instant::min());
+        assert_eq!(Instant::from_str("9999-12-31T23:59:59Z")?, Instant::max());
+        assert!(Instant::from_str("1970-01-01T00:00:00").is_err());
+        assert_eq!(
+            Instant::from_str("1970-01-01T00:00:00Z")?.to_string(),
+            "1970-01-01T00:00:00Z"
+        );
+        Ok(())
     }
 
     #[test]
