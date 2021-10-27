@@ -11,13 +11,19 @@ use crate::{Days, Seconds};
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Instant(u64);
 
+// 9999-12-31T23:59:59Z
+const MAX: Instant = Instant(253_402_300_799_u64);
+
+// 1970-01-01T00:00:00Z
+const MIN: Instant = Instant(0_u64);
+
 impl Instant {
     pub fn max() -> Self {
-        Self(253_402_300_799_u64)
+        MAX
     }
 
     pub fn min() -> Self {
-        Self(0_u64)
+        MIN
     }
 
     pub fn now() -> Self {
