@@ -18,6 +18,10 @@ const MAX: Instant = Instant(253_402_300_799_u64);
 const MIN: Instant = Instant(0_u64);
 
 impl Instant {
+    pub fn from_seconds(seconds: Seconds) -> Result<Self, TryFromInstantError> {
+        Instant::try_from(u64::from(seconds))
+    }
+
     pub fn max() -> Self {
         MAX
     }
@@ -36,6 +40,10 @@ impl Instant {
         } else {
             panic!("out of range")
         }
+    }
+
+    pub fn as_seconds(&self) -> Seconds {
+        Seconds::from(self.0)
     }
 }
 
@@ -249,6 +257,28 @@ mod tests {
         );
         assert!(Instant::try_from(u64::from(Instant::max()) + 1_u64).is_err());
         assert!(Instant::try_from(u64::MAX).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn seconds_conversion_test() -> anyhow::Result<()> {
+        // Instant -> Seconds
+        assert_eq!(Instant::min().as_seconds(), Seconds::from(0_u64));
+        assert_eq!(
+            Instant::max().as_seconds(),
+            Seconds::from(253_402_300_799_u64)
+        );
+        // Seconds -> Instant
+        assert_eq!(
+            Instant::from_seconds(Seconds::from(u64::MIN))?,
+            Instant::min()
+        );
+        assert_eq!(
+            Instant::from_seconds(Seconds::from(253_402_300_799_u64))?,
+            Instant::max()
+        );
+        assert!(Instant::from_seconds(Seconds::from(253_402_300_799_u64 + 1)).is_err());
+        assert!(Instant::from_seconds(Seconds::from(u64::MAX)).is_err());
         Ok(())
     }
 
