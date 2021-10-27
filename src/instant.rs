@@ -1,4 +1,8 @@
-use std::{convert::TryFrom, ops::Add};
+use std::{
+    convert::TryFrom,
+    ops::Add,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use thiserror::Error;
 
@@ -17,11 +21,14 @@ impl Instant {
     }
 
     pub fn now() -> Self {
-        let timestamp = chrono::Utc::now().timestamp();
-        if (0..=i64::from(Self::max())).contains(&timestamp) {
-            Self(timestamp as u64)
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("before unix epoch")
+            .as_secs();
+        if (0..=u64::from(Self::max())).contains(&timestamp) {
+            Self(timestamp)
         } else {
-            panic!()
+            panic!("out of range")
         }
     }
 }
