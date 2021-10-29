@@ -47,12 +47,22 @@ impl Date {
         }
     }
 
+    pub fn first_date_of_year(year: Year) -> Self {
+        let year_month = YearMonth::first_year_month_of_year(year);
+        Self::first_date_of_month(year_month)
+    }
+
     pub fn last_date_of_month(year_month: YearMonth) -> Self {
         Self {
             year: year_month.year(),
             month: year_month.month(),
             day_of_month: year_month.last_day_of_month(),
         }
+    }
+
+    pub fn last_date_of_year(year: Year) -> Self {
+        let year_month = YearMonth::last_year_month_of_year(year);
+        Self::last_date_of_month(year_month)
     }
 
     pub fn from_ymd(
@@ -165,6 +175,13 @@ mod tests {
     }
 
     #[test]
+    fn first_date_of_year_test() -> anyhow::Result<()> {
+        let year = Year::from_str("2021")?;
+        assert_eq!(Date::first_date_of_year(year).to_string(), "2021-01-01");
+        Ok(())
+    }
+
+    #[test]
     fn last_date_of_month_test() -> anyhow::Result<()> {
         let year_month = YearMonth::from_str("2021-01")?;
         assert_eq!(
@@ -176,6 +193,13 @@ mod tests {
             Date::last_date_of_month(year_month).to_string(),
             "2021-02-28"
         );
+        Ok(())
+    }
+
+    #[test]
+    fn last_date_of_year_test() -> anyhow::Result<()> {
+        let year = Year::from_str("2021")?;
+        assert_eq!(Date::last_date_of_year(year).to_string(), "2021-12-31");
         Ok(())
     }
 
