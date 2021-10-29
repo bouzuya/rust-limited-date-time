@@ -24,11 +24,50 @@ pub(crate) fn year_to_days_from_ce(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
+pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
+    if d <= 0 {
+        panic!()
+    }
+
+    let d = d - 1;
+    let days_of_year = 365;
+    let days_of_4_years = days_of_year * 4 + 1;
+    let days_of_100_years = days_of_4_years * 25 - 1;
+    let days_of_400_years = days_of_100_years * 4 + 1;
+    let c400 = d / days_of_400_years;
+    let r400 = d % days_of_400_years;
+    let c100 = r400 / days_of_100_years;
+    let r100 = r400 % days_of_100_years;
+    let c4 = r100 / days_of_4_years;
+    let r4 = r100 % days_of_4_years;
+    let c1 = r4 / days_of_year;
+    let r1 = r4 % days_of_year;
+    let is_leap = c100 == 4 || c1 == 4;
+    let year = c400 * 400 + c100 * 100 + c4 * 4 + c1 + if is_leap { 0 } else { 1 };
+    let day_of_year = if is_leap { days_of_year } else { r1 } + 1;
+    (year, day_of_year)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Instant;
 
     use super::*;
+
+    #[test]
+    fn ordinal_date_from_days_from_ce_test() {
+        for d in 1..=(253_402_300_799 / 86_400) {
+            let (y1, d1) = ordinal_date_from_days_from_ce(d);
+            let (y2, d2) = {
+                let naive_date = chrono::NaiveDate::from_num_days_from_ce(d as i32);
+                (
+                    chrono::Datelike::year(&naive_date) as i64,
+                    chrono::Datelike::ordinal(&naive_date) as i64,
+                )
+            };
+            assert_eq!((y1, d1), (y2, d2));
+        }
+    }
 
     #[test]
     fn date_time_string_from_timestamp_test() -> anyhow::Result<()> {
