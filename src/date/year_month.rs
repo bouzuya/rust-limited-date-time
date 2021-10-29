@@ -28,6 +28,20 @@ impl YearMonth {
         Self { year, month }
     }
 
+    pub fn first_year_month_of_year(year: Year) -> Self {
+        Self {
+            year,
+            month: Month::january(),
+        }
+    }
+
+    pub fn last_year_month_of_year(year: Year) -> Self {
+        Self {
+            year,
+            month: Month::december(),
+        }
+    }
+
     pub fn days(&self) -> Days {
         Days::from(u32::from(u8::from(self.last_day_of_month())))
     }
@@ -272,6 +286,24 @@ mod tests {
         );
         // should panic
         // YearMonth::from_str("9999-12")? + Months::from(1),
+        Ok(())
+    }
+
+    #[test]
+    fn first_year_month_of_year_test() -> anyhow::Result<()> {
+        assert_eq!(
+            YearMonth::first_year_month_of_year(Year::try_from(2021)?),
+            YearMonth::from_str("2021-01")?
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn last_year_month_of_year_test() -> anyhow::Result<()> {
+        assert_eq!(
+            YearMonth::last_year_month_of_year(Year::try_from(2021)?),
+            YearMonth::from_str("2021-12")?
+        );
         Ok(())
     }
 }
