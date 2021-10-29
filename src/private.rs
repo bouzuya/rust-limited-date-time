@@ -26,6 +26,13 @@ pub(crate) fn days_from_ce_from_year(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
+pub(crate) fn days_from_ce_from_ordinal_date((year, day_of_year): (i64, i64)) -> i64 {
+    if year == 0 {
+        panic!()
+    }
+    days_from_ce_from_year(year - 1) + day_of_year
+}
+
 pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
     if d <= 0 {
         panic!()
@@ -68,6 +75,11 @@ mod tests {
                 )
             };
             assert_eq!((y1, d1), (y2, d2));
+
+            let days_from_ce = days_from_ce_from_ordinal_date((y1, d1));
+            let (y3, d3) = ordinal_date_from_days_from_ce(days_from_ce);
+            assert_eq!(days_from_ce, d);
+            assert_eq!((y1, d1), (y3, d3));
         }
     }
 
