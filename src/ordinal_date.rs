@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use crate::{
-    private::year_to_days_from_ce, Date, DayOfMonth, DayOfYear, Days, Month, ParseDayOfYearError,
+    private::days_from_ce_from_year, Date, DayOfMonth, DayOfYear, Days, Month, ParseDayOfYearError,
     ParseYearError, Year, YearMonth,
 };
 
@@ -83,7 +83,7 @@ impl OrdinalDate {
 
     pub(crate) fn days_from_ce(self) -> Days {
         Days::from(
-            (year_to_days_from_ce(i64::from(u16::from(self.year) - 1))
+            (days_from_ce_from_year(i64::from(u16::from(self.year) - 1))
                 + i64::from(u16::from(self.day_of_year))) as u32,
         )
     }

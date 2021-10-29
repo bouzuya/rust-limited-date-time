@@ -7,12 +7,14 @@ use thiserror::Error;
 #[error("timestamp error")]
 pub struct TimestampError;
 
-pub(crate) fn date_time_string_from_timestamp(timestamp: i64) -> Result<String, TimestampError> {
+pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
+    timestamp: i64,
+) -> Result<String, TimestampError> {
     let naive_date_time = NaiveDateTime::from_timestamp(timestamp, 0);
     Ok(format!("{:?}", naive_date_time))
 }
 
-pub(crate) fn timestamp_from_date_time_string(
+pub(crate) fn seconds_from_unix_epoch_from_date_time_string(
     date_time_string: &str,
 ) -> Result<i64, TimestampError> {
     Ok(NaiveDateTime::from_str(date_time_string)
@@ -20,7 +22,7 @@ pub(crate) fn timestamp_from_date_time_string(
         .timestamp())
 }
 
-pub(crate) fn year_to_days_from_ce(y: i64) -> i64 {
+pub(crate) fn days_from_ce_from_year(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
@@ -70,8 +72,8 @@ mod tests {
     }
 
     #[test]
-    fn date_time_string_from_timestamp_test() -> anyhow::Result<()> {
-        let f = date_time_string_from_timestamp;
+    fn date_time_string_from_seconds_from_unix_epoch_test() -> anyhow::Result<()> {
+        let f = date_time_string_from_seconds_from_unix_epoch;
         let min_timestamp = u64::from(Instant::min()) as i64;
         let max_timestamp = u64::from(Instant::max()) as i64;
         assert_eq!(f(min_timestamp - 1)?, "1969-12-31T23:59:59");
@@ -82,8 +84,8 @@ mod tests {
     }
 
     #[test]
-    fn timestamp_from_date_time_string_test() -> anyhow::Result<()> {
-        let f = timestamp_from_date_time_string;
+    fn seconds_from_unix_epoch_from_date_time_string_test() -> anyhow::Result<()> {
+        let f = seconds_from_unix_epoch_from_date_time_string;
         let min_timestamp = u64::from(Instant::min()) as i64;
         let max_timestamp = u64::from(Instant::max()) as i64;
         assert_eq!(f("1969-12-31T23:59:59")?, min_timestamp - 1);
@@ -94,8 +96,8 @@ mod tests {
     }
 
     #[test]
-    fn year_to_days_from_ce_test() -> anyhow::Result<()> {
-        let f = year_to_days_from_ce;
+    fn days_from_ce_from_year_test() -> anyhow::Result<()> {
+        let f = days_from_ce_from_year;
         let g =
             |y| chrono::Datelike::num_days_from_ce(&chrono::NaiveDate::from_ymd(y as i32, 1, 1));
         assert_eq!(f(0), 0); // 0000-12-31 ... 0 d

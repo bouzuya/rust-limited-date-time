@@ -7,7 +7,10 @@ use std::{
 use thiserror::Error;
 
 use crate::{
-    private::{date_time_string_from_timestamp, timestamp_from_date_time_string},
+    private::{
+        date_time_string_from_seconds_from_unix_epoch,
+        seconds_from_unix_epoch_from_date_time_string,
+    },
     Days, Seconds,
 };
 
@@ -66,9 +69,10 @@ pub enum TryFromInstantError {
 
 impl std::fmt::Display for Instant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut s =
-            date_time_string_from_timestamp(i64::try_from(self.0).map_err(|_| std::fmt::Error)?)
-                .map_err(|_| std::fmt::Error)?;
+        let mut s = date_time_string_from_seconds_from_unix_epoch(
+            i64::try_from(self.0).map_err(|_| std::fmt::Error)?,
+        )
+        .map_err(|_| std::fmt::Error)?;
         s.push('Z');
         write!(f, "{}", s)
     }
@@ -81,8 +85,8 @@ impl std::str::FromStr for Instant {
         let s = s
             .strip_suffix('Z')
             .ok_or(ParseInstantError::InvalidFormat)?;
-        let timestamp =
-            timestamp_from_date_time_string(s).map_err(|_| ParseInstantError::InvalidFormat)?;
+        let timestamp = seconds_from_unix_epoch_from_date_time_string(s)
+            .map_err(|_| ParseInstantError::InvalidFormat)?;
         Instant::try_from(timestamp).map_err(|_| ParseInstantError::OutOfRange)
     }
 }
