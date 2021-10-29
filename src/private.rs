@@ -57,8 +57,39 @@ pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
     (year, day_of_year)
 }
 
+pub(crate) fn seconds_from_midnight_from_time((h, min, s): (i64, i64, i64)) -> i64 {
+    if !(0..24).contains(&h) {
+        panic!()
+    }
+    if !(0..60).contains(&min) {
+        panic!()
+    }
+    if !(0..60).contains(&s) {
+        panic!()
+    }
+    (h * 60 + min) * 60 + s
+}
+
+pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
+    if !(0..86_400).contains(&seconds) {
+        panic!()
+    }
+    let s = seconds % 60;
+    let seconds = seconds / 60;
+    let min = seconds % 60;
+    let seconds = seconds / 60;
+    let h = seconds % 24;
+    let x = seconds / 24;
+    if x != 0 {
+        panic!()
+    }
+    (h, min, s)
+}
+
 #[cfg(test)]
 mod tests {
+    use chrono::{Datelike, Timelike};
+
     use crate::Instant;
 
     use super::*;
@@ -70,8 +101,8 @@ mod tests {
             let (y2, d2) = {
                 let naive_date = chrono::NaiveDate::from_num_days_from_ce(d as i32);
                 (
-                    chrono::Datelike::year(&naive_date) as i64,
-                    chrono::Datelike::ordinal(&naive_date) as i64,
+                    Datelike::year(&naive_date) as i64,
+                    Datelike::ordinal(&naive_date) as i64,
                 )
             };
             assert_eq!((y1, d1), (y2, d2));
@@ -110,8 +141,7 @@ mod tests {
     #[test]
     fn days_from_ce_from_year_test() -> anyhow::Result<()> {
         let f = days_from_ce_from_year;
-        let g =
-            |y| chrono::Datelike::num_days_from_ce(&chrono::NaiveDate::from_ymd(y as i32, 1, 1));
+        let g = |y| Datelike::num_days_from_ce(&chrono::NaiveDate::from_ymd(y as i32, 1, 1));
         assert_eq!(f(0), 0); // 0000-12-31 ... 0 d
         assert_eq!(g(1), 1); // 0001-01-01 ... 1 d
         assert_eq!(f(1), 365); // 0001-12-31 ... 365 d
@@ -124,5 +154,20 @@ mod tests {
             assert_eq!(f(y - 1) + 1, i64::from(g(y)));
         }
         Ok(())
+    }
+
+    #[test]
+    fn seconds_from_midnight_from_time_and_time_from_seconds_from_midnight_test() {
+        for s in 0..86_400 {
+            let time = chrono::NaiveTime::from_num_seconds_from_midnight(s as u32, 0);
+            let t1 = (
+                time.hour() as i64,
+                time.minute() as i64,
+                time.second() as i64,
+            );
+            let t2 = time_from_seconds_from_midnight(s);
+            assert_eq!(t1, t2);
+            assert_eq!(seconds_from_midnight_from_time(t2), s);
+        }
     }
 }
