@@ -4,6 +4,20 @@ use thiserror::Error;
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Second(u8);
 
+const MAX_SECOND: Second = Second(59);
+
+const MIN_SECOND: Second = Second(0);
+
+impl Second {
+    pub const fn max() -> Self {
+        MAX_SECOND
+    }
+
+    pub const fn min() -> Self {
+        MIN_SECOND
+    }
+}
+
 #[derive(Debug, Eq, Error, PartialEq)]
 pub enum ParseSecondError {
     #[error("invalid digit")]
@@ -64,7 +78,21 @@ impl std::convert::TryFrom<u8> for Second {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
+
+    #[test]
+    fn max_test() -> anyhow::Result<()> {
+        assert_eq!(Second::max(), Second::from_str("59")?);
+        Ok(())
+    }
+
+    #[test]
+    fn min_test() -> anyhow::Result<()> {
+        assert_eq!(Second::min(), Second::from_str("00")?);
+        Ok(())
+    }
 
     #[test]
     fn str_conversion_test() {
