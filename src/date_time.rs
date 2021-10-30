@@ -25,6 +25,10 @@ impl DateTime {
         Self { date, time }
     }
 
+    pub fn new(date: Date, time: Time) -> Self {
+        Self { date, time }
+    }
+
     pub fn date(&self) -> Date {
         self.date
     }
@@ -68,6 +72,17 @@ mod tests {
         let time = Time::from_str("04:05:06")?;
         assert_eq!(
             DateTime::from_date_time(date, time),
+            DateTime::from_str("2021-02-03T04:05:06")?
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn new_test() -> anyhow::Result<()> {
+        let date = Date::from_str("2021-02-03")?;
+        let time = Time::from_str("04:05:06")?;
+        assert_eq!(
+            DateTime::new(date, time),
             DateTime::from_str("2021-02-03T04:05:06")?
         );
         Ok(())
