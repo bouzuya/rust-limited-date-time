@@ -74,3 +74,6 @@
       - まだ提供していない
       - 提供すると混雑しそう
       - ひとまずなし
+- `TimeZoneOffset::system_default` は実装しない
+  - Rust の std の機能では実装できなさそう
+  - chrono は libc で実装しているみたい
