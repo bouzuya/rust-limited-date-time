@@ -15,6 +15,18 @@ pub struct Time {
     second: Second,
 }
 
+const MAX_TIME: Time = Time {
+    hour: Hour::max(),
+    minute: Minute::max(),
+    second: Second::max(),
+};
+
+const MIN_TIME: Time = Time {
+    hour: Hour::min(),
+    minute: Minute::min(),
+    second: Second::min(),
+};
+
 #[derive(Debug, Eq, Error, PartialEq)]
 pub enum ParseTimeError {
     #[error("invalid format")]
@@ -40,6 +52,14 @@ impl Time {
             minute,
             second,
         }
+    }
+
+    pub const fn max() -> Self {
+        MAX_TIME
+    }
+
+    pub const fn min() -> Self {
+        MIN_TIME
     }
 
     pub fn hour(&self) -> Hour {
@@ -122,6 +142,18 @@ mod tests {
             ),
             Time::from_str("04:05:06")?
         );
+        Ok(())
+    }
+
+    #[test]
+    fn max_test() -> anyhow::Result<()> {
+        assert_eq!(Time::max(), Time::from_str("23:59:59")?);
+        Ok(())
+    }
+
+    #[test]
+    fn min_test() -> anyhow::Result<()> {
+        assert_eq!(Time::min(), Time::from_str("00:00:00")?);
         Ok(())
     }
 
