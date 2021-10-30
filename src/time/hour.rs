@@ -4,6 +4,20 @@ use thiserror::Error;
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Hour(u8);
 
+const MAX_HOUR: Hour = Hour(23);
+
+const MIN_HOUR: Hour = Hour(0);
+
+impl Hour {
+    pub const fn max() -> Self {
+        MAX_HOUR
+    }
+
+    pub const fn min() -> Self {
+        MIN_HOUR
+    }
+}
+
 #[derive(Debug, Eq, Error, PartialEq)]
 pub enum ParseHourError {
     #[error("invalid digit")]
@@ -64,7 +78,21 @@ impl std::convert::TryFrom<u8> for Hour {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
+
+    #[test]
+    fn max_test() -> anyhow::Result<()> {
+        assert_eq!(Hour::max(), Hour::from_str("23")?);
+        Ok(())
+    }
+
+    #[test]
+    fn min_test() -> anyhow::Result<()> {
+        assert_eq!(Hour::min(), Hour::from_str("00")?);
+        Ok(())
+    }
 
     #[test]
     fn str_conversion_test() {
