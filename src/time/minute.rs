@@ -4,6 +4,20 @@ use thiserror::Error;
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Minute(u8);
 
+const MAX_MINUTE: Minute = Minute(59);
+
+const MIN_MINUTE: Minute = Minute(0);
+
+impl Minute {
+    pub const fn max() -> Self {
+        MAX_MINUTE
+    }
+
+    pub const fn min() -> Self {
+        MIN_MINUTE
+    }
+}
+
 #[derive(Debug, Eq, Error, PartialEq)]
 pub enum ParseMinuteError {
     #[error("invalid digit")]
@@ -64,7 +78,21 @@ impl std::convert::TryFrom<u8> for Minute {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
+
+    #[test]
+    fn max_test() -> anyhow::Result<()> {
+        assert_eq!(Minute::max(), Minute::from_str("59")?);
+        Ok(())
+    }
+
+    #[test]
+    fn min_test() -> anyhow::Result<()> {
+        assert_eq!(Minute::min(), Minute::from_str("00")?);
+        Ok(())
+    }
 
     #[test]
     fn str_conversion_test() {
