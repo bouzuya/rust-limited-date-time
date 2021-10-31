@@ -15,6 +15,25 @@ pub(crate) fn is_leap_year(year: i64) -> bool {
     (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
 }
 
+pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64) {
+    let (year, day_of_year) = ordinal_date;
+    let days_of_month_table = if is_leap_year(year) {
+        [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    } else {
+        [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    };
+    let mut days = 0;
+    for (index, days_of_month) in days_of_month_table.into_iter().enumerate() {
+        let month = index as i64 + 1;
+        if day_of_year <= days + days_of_month {
+            let day_of_month = day_of_year - days;
+            return (year, month, day_of_month);
+        }
+        days += days_of_month;
+    }
+    unreachable!()
+}
+
 pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
     timestamp: i64,
 ) -> Result<String, TimestampError> {
@@ -101,6 +120,13 @@ mod tests {
     use crate::Instant;
 
     use super::*;
+
+    #[test]
+    fn date_from_ordinal_date_test() {
+        assert_eq!(date_from_ordinal_date((2021, 1)), (2021, 1, 1));
+        assert_eq!(date_from_ordinal_date((2021, 365)), (2021, 12, 31));
+        assert_eq!(date_from_ordinal_date((2000, 366)), (2000, 12, 31));
+    }
 
     #[test]
     fn is_leap_year_test() {
