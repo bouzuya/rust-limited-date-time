@@ -2,6 +2,11 @@ mod hour;
 mod minute;
 mod second;
 
+use crate::private::seconds_from_midnight_from_time;
+use crate::Seconds;
+
+use std::convert::TryFrom;
+
 pub use self::hour::*;
 pub use self::minute::*;
 pub use self::second::*;
@@ -72,6 +77,17 @@ impl Time {
 
     pub fn second(&self) -> Second {
         self.second
+    }
+
+    pub(crate) fn seconds_from_midnight(&self) -> Seconds {
+        let seconds_from_midnight = seconds_from_midnight_from_time((
+            i64::from(self.hour()),
+            i64::from(self.minute()),
+            i64::from(self.second()),
+        ));
+        let seconds_from_midnight_as_u64 =
+            u64::try_from(seconds_from_midnight).expect("Time seconds from midnight is [0, 86400)");
+        Seconds::from(seconds_from_midnight_as_u64)
     }
 }
 
@@ -194,6 +210,25 @@ mod tests {
     fn second_test() -> anyhow::Result<()> {
         let time = Time::from_str("04:05:06")?;
         assert_eq!(time.second(), Second::from_str("06")?);
+        Ok(())
+    }
+
+    #[test]
+    fn seconds_from_midnight_test() -> anyhow::Result<()> {
+        for h in 0..24 {
+            let hour = Hour::try_from(h)?;
+            for m in 0..60 {
+                let minute = Minute::try_from(m)?;
+                for s in 0..60 {
+                    let second = Second::try_from(s)?;
+                    let time = Time::from_hms(hour, minute, second);
+                    assert_eq!(
+                        time.seconds_from_midnight(),
+                        Seconds::from(h * 60 * 60 + m * 60 + s)
+                    );
+                }
+            }
+        }
         Ok(())
     }
 }

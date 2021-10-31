@@ -79,4 +79,5 @@ digraph {
   time -> hour
   time -> minute
   time -> second
+  time -> seconds
 }
