@@ -3,18 +3,27 @@ use std::str::FromStr;
 use chrono::NaiveDateTime;
 use thiserror::Error;
 
+// days_from_ce_from_year(1969) + 1)
+// 719_163_i64
+const DAYS_FROM_CE_TO_UNIX_EPOCH: i64 = 719_163_i64;
+
+// 365_i64
 const DAYS_PER_COMMON_YEAR: i64 = 365;
 
+// 1_461_i64
 const DAYS_PER_4_YEARS: i64 = DAYS_PER_COMMON_YEAR * 4 + 1;
 
+// 36_524_i64
 const DAYS_PER_100_YEARS: i64 = DAYS_PER_4_YEARS * 25 - 1;
 
+// 146_097_i64
 const DAYS_PER_400_YEARS: i64 = DAYS_PER_100_YEARS * 4 + 1;
 
+// 86_400_i64
 const SECONDS_PER_DAY: i64 = 24 * 60 * 60;
 
-// (days_from_ce_from_year(1969) + 1) * SECONDS_PER_DAY;
-const SECONDS_FROM_CE_TO_UNIX_EPOCH: i64 = 62_135_683_200_i64;
+// 62_135_683_200_i64;
+const SECONDS_FROM_CE_TO_UNIX_EPOCH: i64 = DAYS_FROM_CE_TO_UNIX_EPOCH * SECONDS_PER_DAY;
 
 #[derive(Debug, Error)]
 #[error("timestamp error")]
@@ -145,11 +154,46 @@ pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use chrono::{Datelike, Timelike};
 
     use crate::Instant;
 
     use super::*;
+
+    // #[test]
+    // fn WIP_seconds_from_unix_epoch_from_date_time_string_test() -> anyhow::Result<()> {
+    //     let f = seconds_from_unix_epoch_from_date_time_string;
+    //     let min_timestamp = u64::from(Instant::min()) as i64;
+    //     let max_timestamp = u64::from(Instant::max()) as i64;
+    //     assert_eq!(f("1969-12-31T23:59:59")?, min_timestamp - 1);
+    //     assert_eq!(f("1970-01-01T00:00:00")?, min_timestamp);
+    //     assert_eq!(f("9999-12-31T23:59:59")?, max_timestamp);
+    //     assert_eq!(f("+10000-01-01T00:00:00")?, max_timestamp + 1);
+    //     Ok(())
+    // }
+
+    #[test]
+    fn const_days_from_ce_to_unix_epoch_test() -> anyhow::Result<()> {
+        // JavaScript
+        // new Date('0000-12-31T00:00:00Z').getTime() - new Date('0000-12-31T00:00:00Z').getTime()
+        // // => 0
+        let days_from_ce =
+            i64::from(chrono::NaiveDateTime::from_str("0000-12-31T00:00:00")?.num_days_from_ce());
+        assert_eq!(days_from_ce, 0);
+
+        // (new Date('1970-01-01T00:00:00Z').getTime() - new Date('0000-12-31T00:00:00Z').getTime()) / 86_400
+        // // => 719163000
+        let days_from_ce_to_unix_epoch =
+            i64::from(chrono::NaiveDateTime::from_str("1970-01-01T00:00:00")?.num_days_from_ce());
+        assert_eq!(days_from_ce_to_unix_epoch, 719_163_i64);
+
+        assert_eq!(DAYS_FROM_CE_TO_UNIX_EPOCH, days_from_ce_to_unix_epoch);
+        assert_eq!(DAYS_FROM_CE_TO_UNIX_EPOCH, days_from_ce_from_year(1969) + 1);
+        assert_eq!(DAYS_FROM_CE_TO_UNIX_EPOCH, 719_163_i64);
+        Ok(())
+    }
 
     #[test]
     fn const_days_per_common_year_test() {
