@@ -69,9 +69,87 @@ impl std::str::FromStr for DayOfMonth {
     }
 }
 
+impl From<DayOfMonth> for i8 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        i8::try_from(day_of_month.0).expect("day_of_month is [1,31]")
+    }
+}
+
+impl From<DayOfMonth> for i16 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        i16::from(day_of_month.0)
+    }
+}
+
+impl From<DayOfMonth> for i32 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        i32::from(day_of_month.0)
+    }
+}
+
+impl From<DayOfMonth> for i64 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        i64::from(day_of_month.0)
+    }
+}
+
 impl From<DayOfMonth> for u8 {
     fn from(day_of_month: DayOfMonth) -> Self {
         day_of_month.0
+    }
+}
+
+impl From<DayOfMonth> for u16 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        u16::from(day_of_month.0)
+    }
+}
+
+impl From<DayOfMonth> for u32 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        u32::from(day_of_month.0)
+    }
+}
+
+impl From<DayOfMonth> for u64 {
+    fn from(day_of_month: DayOfMonth) -> Self {
+        u64::from(day_of_month.0)
+    }
+}
+
+impl std::convert::TryFrom<i8> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: i8) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i16> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i32> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i64> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
     }
 }
 
@@ -83,6 +161,33 @@ impl std::convert::TryFrom<u8> for DayOfMonth {
             return Err(Self::Error::OutOfRange);
         }
         Ok(Self(value))
+    }
+}
+
+impl std::convert::TryFrom<u16> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<u32> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<u64> for DayOfMonth {
+    type Error = TryFromDayOfMonthError;
+
+    fn try_from(value: u64) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
     }
 }
 
@@ -126,6 +231,46 @@ mod tests {
     }
 
     #[test]
+    fn i8_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: i8| DayOfMonth::try_from(d);
+        assert_eq!(f(0_i8), Err(E::OutOfRange));
+        assert_eq!(f(1_i8).map(i8::from), Ok(1_i8));
+        assert_eq!(f(31_i8).map(i8::from), Ok(31_i8));
+        assert_eq!(f(32_i8), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i16_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: i16| DayOfMonth::try_from(d);
+        assert_eq!(f(0_i16), Err(E::OutOfRange));
+        assert_eq!(f(1_i16).map(i16::from), Ok(1_i16));
+        assert_eq!(f(31_i16).map(i16::from), Ok(31_i16));
+        assert_eq!(f(32_i16), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i32_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: i32| DayOfMonth::try_from(d);
+        assert_eq!(f(0_i32), Err(E::OutOfRange));
+        assert_eq!(f(1_i32).map(i32::from), Ok(1_i32));
+        assert_eq!(f(31_i32).map(i32::from), Ok(31_i32));
+        assert_eq!(f(32_i32), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i64_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: i64| DayOfMonth::try_from(d);
+        assert_eq!(f(0_i64), Err(E::OutOfRange));
+        assert_eq!(f(1_i64).map(i64::from), Ok(1_i64));
+        assert_eq!(f(31_i64).map(i64::from), Ok(31_i64));
+        assert_eq!(f(32_i64), Err(E::OutOfRange));
+    }
+
+    #[test]
     fn u8_conversion_test() {
         type E = TryFromDayOfMonthError;
         let f = |d: u8| DayOfMonth::try_from(d);
@@ -133,6 +278,36 @@ mod tests {
         assert_eq!(f(1_u8).map(u8::from), Ok(1_u8));
         assert_eq!(f(31_u8).map(u8::from), Ok(31_u8));
         assert_eq!(f(32_u8), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u16_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: u16| DayOfMonth::try_from(d);
+        assert_eq!(f(0_u16), Err(E::OutOfRange));
+        assert_eq!(f(1_u16).map(u16::from), Ok(1_u16));
+        assert_eq!(f(31_u16).map(u16::from), Ok(31_u16));
+        assert_eq!(f(32_u16), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u32_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: u32| DayOfMonth::try_from(d);
+        assert_eq!(f(0_u32), Err(E::OutOfRange));
+        assert_eq!(f(1_u32).map(u32::from), Ok(1_u32));
+        assert_eq!(f(31_u32).map(u32::from), Ok(31_u32));
+        assert_eq!(f(32_u32), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u64_conversion_test() {
+        type E = TryFromDayOfMonthError;
+        let f = |d: u64| DayOfMonth::try_from(d);
+        assert_eq!(f(0_u64), Err(E::OutOfRange));
+        assert_eq!(f(1_u64).map(u64::from), Ok(1_u64));
+        assert_eq!(f(31_u64).map(u64::from), Ok(31_u64));
+        assert_eq!(f(32_u64), Err(E::OutOfRange));
     }
 
     #[test]
