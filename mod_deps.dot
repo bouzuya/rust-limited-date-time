@@ -10,6 +10,7 @@ digraph {
       day_of_month
       day_of_year
       month
+      ordinal_date
       year
       year_month
     }
@@ -34,7 +35,6 @@ digraph {
     // duration
     instant
     offset_date_time
-    ordinal_date
     time_zone_offset
     // time
   }
