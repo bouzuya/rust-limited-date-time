@@ -20,14 +20,6 @@ const SECONDS_FROM_CE_TO_UNIX_EPOCH: i64 = 62_135_683_200_i64;
 #[error("timestamp error")]
 pub struct TimestampError;
 
-pub(crate) fn is_leap_year(year: i64) -> bool {
-    if year < 0 {
-        panic!()
-    }
-
-    (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
-}
-
 pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64) {
     let (year, day_of_year) = ordinal_date;
     let days_of_month_table = if is_leap_year(year) {
@@ -62,23 +54,23 @@ pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
     ))
 }
 
-pub(crate) fn seconds_from_unix_epoch_from_date_time_string(
-    date_time_string: &str,
-) -> Result<i64, TimestampError> {
-    Ok(NaiveDateTime::from_str(date_time_string)
-        .map_err(|_| TimestampError)?
-        .timestamp())
+pub(crate) fn days_from_ce_from_ordinal_date((year, day_of_year): (i64, i64)) -> i64 {
+    if year == 0 {
+        panic!()
+    }
+    days_from_ce_from_year(year - 1) + day_of_year
 }
 
 pub(crate) fn days_from_ce_from_year(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
-pub(crate) fn days_from_ce_from_ordinal_date((year, day_of_year): (i64, i64)) -> i64 {
-    if year == 0 {
+pub(crate) fn is_leap_year(year: i64) -> bool {
+    if year < 0 {
         panic!()
     }
-    days_from_ce_from_year(year - 1) + day_of_year
+
+    (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
 }
 
 pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
@@ -112,6 +104,14 @@ pub(crate) fn seconds_from_midnight_from_time((h, min, s): (i64, i64, i64)) -> i
         panic!()
     }
     (h * 60 + min) * 60 + s
+}
+
+pub(crate) fn seconds_from_unix_epoch_from_date_time_string(
+    date_time_string: &str,
+) -> Result<i64, TimestampError> {
+    Ok(NaiveDateTime::from_str(date_time_string)
+        .map_err(|_| TimestampError)?
+        .timestamp())
 }
 
 pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
@@ -203,6 +203,41 @@ mod tests {
     }
 
     #[test]
+    fn date_time_string_from_seconds_from_unix_epoch_test() -> anyhow::Result<()> {
+        let f = date_time_string_from_seconds_from_unix_epoch;
+        let min_timestamp = 0_i64; // 1970-01-01T00:00:00Z
+        let max_timestamp = 253_402_300_799_i64; // 9999-12-31T23:59:59Z
+        assert_eq!(f(min_timestamp - 1)?, "1969-12-31T23:59:59");
+        assert_eq!(f(min_timestamp)?, "1970-01-01T00:00:00");
+        assert_eq!(f(max_timestamp)?, "9999-12-31T23:59:59");
+        assert_eq!(f(max_timestamp + 1)?, "10000-01-01T00:00:00");
+        Ok(())
+    }
+
+    #[test]
+    fn days_from_ce_from_ordinal_date_test() {
+        // See: ordinal_date_from_days_from_ce_test
+    }
+
+    #[test]
+    fn days_from_ce_from_year_test() -> anyhow::Result<()> {
+        let f = days_from_ce_from_year;
+        let g = |y| Datelike::num_days_from_ce(&chrono::NaiveDate::from_ymd(y as i32, 1, 1));
+        assert_eq!(f(0), 0); // 0000-12-31 ... 0 d
+        assert_eq!(g(1), 1); // 0001-01-01 ... 1 d
+        assert_eq!(f(1), 365); // 0001-12-31 ... 365 d
+        assert_eq!(g(2), 366); // 0002-01-01 ... 366 d
+        assert_eq!(f(2), 730); // 0002-12-31 ... 730 d
+        assert_eq!(g(3), 731); // 0003-01-01 ... 731 d
+        assert_eq!(f(1969), 719162); // 1969-12-31 ... 719162 d
+        assert_eq!(g(1970), 719163); // 1970-01-01 ... 719163 d
+        for y in 1..=9999 + 1 {
+            assert_eq!(f(y - 1) + 1, i64::from(g(y)));
+        }
+        Ok(())
+    }
+
+    #[test]
     fn is_leap_year_test() {
         let f = is_leap_year;
         assert!(f(2000));
@@ -231,15 +266,18 @@ mod tests {
     }
 
     #[test]
-    fn date_time_string_from_seconds_from_unix_epoch_test() -> anyhow::Result<()> {
-        let f = date_time_string_from_seconds_from_unix_epoch;
-        let min_timestamp = 0_i64; // 1970-01-01T00:00:00Z
-        let max_timestamp = 253_402_300_799_i64; // 9999-12-31T23:59:59Z
-        assert_eq!(f(min_timestamp - 1)?, "1969-12-31T23:59:59");
-        assert_eq!(f(min_timestamp)?, "1970-01-01T00:00:00");
-        assert_eq!(f(max_timestamp)?, "9999-12-31T23:59:59");
-        assert_eq!(f(max_timestamp + 1)?, "10000-01-01T00:00:00");
-        Ok(())
+    fn seconds_from_midnight_from_time_test() {
+        for s in 0..86_400 {
+            let time = chrono::NaiveTime::from_num_seconds_from_midnight(s as u32, 0);
+            let t1 = (
+                time.hour() as i64,
+                time.minute() as i64,
+                time.second() as i64,
+            );
+            let t2 = time_from_seconds_from_midnight(s);
+            assert_eq!(t1, t2);
+            assert_eq!(seconds_from_midnight_from_time(t2), s);
+        }
     }
 
     #[test]
@@ -255,35 +293,7 @@ mod tests {
     }
 
     #[test]
-    fn days_from_ce_from_year_test() -> anyhow::Result<()> {
-        let f = days_from_ce_from_year;
-        let g = |y| Datelike::num_days_from_ce(&chrono::NaiveDate::from_ymd(y as i32, 1, 1));
-        assert_eq!(f(0), 0); // 0000-12-31 ... 0 d
-        assert_eq!(g(1), 1); // 0001-01-01 ... 1 d
-        assert_eq!(f(1), 365); // 0001-12-31 ... 365 d
-        assert_eq!(g(2), 366); // 0002-01-01 ... 366 d
-        assert_eq!(f(2), 730); // 0002-12-31 ... 730 d
-        assert_eq!(g(3), 731); // 0003-01-01 ... 731 d
-        assert_eq!(f(1969), 719162); // 1969-12-31 ... 719162 d
-        assert_eq!(g(1970), 719163); // 1970-01-01 ... 719163 d
-        for y in 1..=9999 + 1 {
-            assert_eq!(f(y - 1) + 1, i64::from(g(y)));
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn seconds_from_midnight_from_time_and_time_from_seconds_from_midnight_test() {
-        for s in 0..86_400 {
-            let time = chrono::NaiveTime::from_num_seconds_from_midnight(s as u32, 0);
-            let t1 = (
-                time.hour() as i64,
-                time.minute() as i64,
-                time.second() as i64,
-            );
-            let t2 = time_from_seconds_from_midnight(s);
-            assert_eq!(t1, t2);
-            assert_eq!(seconds_from_midnight_from_time(t2), s);
-        }
+    fn time_from_seconds_from_midnight_test() {
+        // See: seconds_from_midnight_from_time_test
     }
 }
