@@ -1,5 +1,8 @@
 # limited-date-time
 
+## モジュール間の依存関係
+
+![mod_deps](https://user-images.githubusercontent.com/1221346/139586164-33e0c7a4-e173-4c44-81fe-49c70355b5c7.png)
 
 ## 実装メモ
 
