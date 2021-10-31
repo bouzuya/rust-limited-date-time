@@ -59,9 +59,87 @@ impl std::str::FromStr for Minute {
     }
 }
 
+impl From<Minute> for i8 {
+    fn from(minute: Minute) -> Self {
+        i8::try_from(minute.0).expect("minute is [0, 59]")
+    }
+}
+
+impl From<Minute> for i16 {
+    fn from(minute: Minute) -> Self {
+        i16::from(minute.0)
+    }
+}
+
+impl From<Minute> for i32 {
+    fn from(minute: Minute) -> Self {
+        i32::from(minute.0)
+    }
+}
+
+impl From<Minute> for i64 {
+    fn from(minute: Minute) -> Self {
+        i64::from(minute.0)
+    }
+}
+
 impl From<Minute> for u8 {
     fn from(minute: Minute) -> Self {
         minute.0
+    }
+}
+
+impl From<Minute> for u16 {
+    fn from(minute: Minute) -> Self {
+        u16::from(minute.0)
+    }
+}
+
+impl From<Minute> for u32 {
+    fn from(minute: Minute) -> Self {
+        u32::from(minute.0)
+    }
+}
+
+impl From<Minute> for u64 {
+    fn from(minute: Minute) -> Self {
+        u64::from(minute.0)
+    }
+}
+
+impl std::convert::TryFrom<i8> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: i8) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i16> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i32> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<i64> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
     }
 }
 
@@ -73,6 +151,33 @@ impl std::convert::TryFrom<u8> for Minute {
             return Err(Self::Error::OutOfRange);
         }
         Ok(Self(value))
+    }
+}
+
+impl std::convert::TryFrom<u16> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<u32> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
+    }
+}
+
+impl std::convert::TryFrom<u64> for Minute {
+    type Error = TryFromMinuteError;
+
+    fn try_from(value: u64) -> Result<Self, Self::Error> {
+        let value_as_u8 = u8::try_from(value).map_err(|_| Self::Error::OutOfRange)?;
+        Self::try_from(value_as_u8)
     }
 }
 
@@ -109,11 +214,78 @@ mod tests {
     }
 
     #[test]
+    fn i8_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: i8| Minute::try_from(d);
+        assert_eq!(f(-1_i8), Err(E::OutOfRange));
+        assert_eq!(f(0_i8).map(i8::from), Ok(0_i8));
+        assert_eq!(f(59_i8).map(i8::from), Ok(59_i8));
+        assert_eq!(f(60_i8), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i16_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: i16| Minute::try_from(d);
+        assert_eq!(f(-1_i16), Err(E::OutOfRange));
+        assert_eq!(f(0_i16).map(i16::from), Ok(0_i16));
+        assert_eq!(f(59_i16).map(i16::from), Ok(59_i16));
+        assert_eq!(f(60_i16), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i32_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: i32| Minute::try_from(d);
+        assert_eq!(f(-1_i32), Err(E::OutOfRange));
+        assert_eq!(f(0_i32).map(i32::from), Ok(0_i32));
+        assert_eq!(f(59_i32).map(i32::from), Ok(59_i32));
+        assert_eq!(f(60_i32), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn i64_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: i64| Minute::try_from(d);
+        assert_eq!(f(-1_i64), Err(E::OutOfRange));
+        assert_eq!(f(0_i64).map(i64::from), Ok(0_i64));
+        assert_eq!(f(59_i64).map(i64::from), Ok(59_i64));
+        assert_eq!(f(60_i64), Err(E::OutOfRange));
+    }
+
+    #[test]
     fn u8_conversion_test() {
         type E = TryFromMinuteError;
         let f = |d: u8| Minute::try_from(d);
         assert_eq!(f(0_u8).map(u8::from), Ok(0_u8));
         assert_eq!(f(59_u8).map(u8::from), Ok(59_u8));
         assert_eq!(f(60_u8), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u16_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: u16| Minute::try_from(d);
+        assert_eq!(f(0_u16).map(u16::from), Ok(0_u16));
+        assert_eq!(f(59_u16).map(u16::from), Ok(59_u16));
+        assert_eq!(f(60_u16), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u32_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: u32| Minute::try_from(d);
+        assert_eq!(f(0_u32).map(u32::from), Ok(0_u32));
+        assert_eq!(f(59_u32).map(u32::from), Ok(59_u32));
+        assert_eq!(f(60_u32), Err(E::OutOfRange));
+    }
+
+    #[test]
+    fn u64_conversion_test() {
+        type E = TryFromMinuteError;
+        let f = |d: u64| Minute::try_from(d);
+        assert_eq!(f(0_u64).map(u64::from), Ok(0_u64));
+        assert_eq!(f(59_u64).map(u64::from), Ok(59_u64));
+        assert_eq!(f(60_u64), Err(E::OutOfRange));
     }
 }
