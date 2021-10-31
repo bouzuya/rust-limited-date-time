@@ -1,0 +1,81 @@
+digraph {
+  // Vertex
+
+  subgraph cluster3 {
+    label = "crate::"
+
+    subgraph cluster0 {
+      label = "crate::date::"
+      date
+      day_of_month
+      day_of_year
+      month
+      year
+      year_month
+    }
+
+    subgraph cluster1 {
+      label = "crate::duration::"
+      days
+      months
+      seconds
+    }
+
+    subgraph cluster2 {
+      label = "crate::time::"
+      hour
+      minute
+      second
+      time
+    }
+
+    date_time
+    // date
+    // duration
+    instant
+    offset_date_time
+    ordinal_date
+    time_zone_offset
+    // time
+  }
+
+  // Edge
+
+  // date::*
+  day_of_month -> days
+  day_of_year -> days
+  year_month -> days
+  year_month -> months
+  year_month -> day_of_month
+  year_month -> month
+  year_month -> year
+  year -> day_of_year
+  year -> days
+
+  // duration::*
+  days -> seconds
+
+  // crate::*
+  date_time -> date
+  date_time -> time
+  date -> year
+  date -> month
+  date -> day_of_month
+  date -> year_month
+  instant -> days
+  instant -> seconds
+  offset_date_time -> date_time
+  offset_date_time -> instant
+  offset_date_time -> ordinal_date
+  offset_date_time -> time_zone_offset
+  ordinal_date -> year
+  ordinal_date -> date
+  ordinal_date -> day_of_month
+  ordinal_date -> days
+  ordinal_date -> month
+  ordinal_date -> year_month
+  ordinal_date -> day_of_year
+  time -> hour
+  time -> minute
+  time -> second
+}
