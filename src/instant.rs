@@ -6,13 +6,7 @@ use std::{
 
 use thiserror::Error;
 
-use crate::{
-    private::{
-        date_time_string_from_seconds_from_unix_epoch,
-        seconds_from_unix_epoch_from_date_time_string,
-    },
-    Days, Seconds,
-};
+use crate::{private::date_time_string_from_seconds_from_unix_epoch, DateTime, Days, Seconds};
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Instant(u64);
@@ -85,9 +79,14 @@ impl std::str::FromStr for Instant {
         let s = s
             .strip_suffix('Z')
             .ok_or(ParseInstantError::InvalidFormat)?;
-        let timestamp = seconds_from_unix_epoch_from_date_time_string(s)
-            .map_err(|_| ParseInstantError::InvalidFormat)?;
-        Instant::try_from(timestamp).map_err(|_| ParseInstantError::OutOfRange)
+        let date_time = DateTime::from_str(s).map_err(|_| ParseInstantError::InvalidFormat)?;
+        let days_from_unix_epoch = date_time.date().days_from_unix_epoch();
+        let seconds_from_midnight = date_time.time().seconds_from_midnight();
+        // TODO: use SECONDS_PER_DAY instead of 86_400
+        // TODO: impl From<Days> for u64
+        let seconds_from_unix_epoch =
+            u64::from(u32::from(days_from_unix_epoch)) * 86_400 + u64::from(seconds_from_midnight);
+        Instant::try_from(seconds_from_unix_epoch).map_err(|_| ParseInstantError::OutOfRange)
     }
 }
 

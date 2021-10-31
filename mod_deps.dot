@@ -56,26 +56,27 @@ digraph {
   days -> seconds
 
   // crate::*
+  date -> day_of_month
+  date -> days
+  date -> month
+  date -> year
+  date -> year_month
   date_time -> date
   date_time -> time
-  date -> year
-  date -> month
-  date -> day_of_month
-  date -> year_month
-  date -> days
+  instant -> date_time
   instant -> days
   instant -> seconds
   offset_date_time -> date_time
   offset_date_time -> instant
   offset_date_time -> ordinal_date
   offset_date_time -> time_zone_offset
-  ordinal_date -> year
   ordinal_date -> date
   ordinal_date -> day_of_month
+  ordinal_date -> day_of_year
   ordinal_date -> days
   ordinal_date -> month
+  ordinal_date -> year
   ordinal_date -> year_month
-  ordinal_date -> day_of_year
   time -> hour
   time -> minute
   time -> second
