@@ -73,6 +73,19 @@ pub(crate) fn is_leap_year(year: i64) -> bool {
     (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
 }
 
+pub(crate) fn ordinal_date_from_date((year, month, day_of_month): (i64, i64, i64)) -> (i64, i64) {
+    let days_of_month_table = if is_leap_year(year) {
+        [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    } else {
+        [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    };
+    let day_of_year = days_of_month_table[0..(month - 1) as usize]
+        .iter()
+        .sum::<i64>()
+        + day_of_month;
+    (year, day_of_year)
+}
+
 pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
     if d <= 0 {
         panic!()
@@ -243,6 +256,23 @@ mod tests {
         assert!(f(2000));
         assert!(f(2004));
         assert!(!f(2100));
+    }
+
+    #[test]
+    fn ordinal_date_from_date_test() {
+        for d in 1..=(253_402_300_799 / 86_400) {
+            let ordinal_date = ordinal_date_from_days_from_ce(d);
+            let (y1, m1, d1) = date_from_ordinal_date(ordinal_date);
+            let (y2, m2, d2) = {
+                let naive_date = chrono::NaiveDate::from_num_days_from_ce(d as i32);
+                (
+                    Datelike::year(&naive_date) as i64,
+                    Datelike::month(&naive_date) as i64,
+                    Datelike::day(&naive_date) as i64,
+                )
+            };
+            assert_eq!((y1, m1, d1), (y2, m2, d2));
+        }
     }
 
     #[test]
