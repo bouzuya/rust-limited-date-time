@@ -7,6 +7,14 @@ use thiserror::Error;
 #[error("timestamp error")]
 pub struct TimestampError;
 
+pub(crate) fn is_leap_year(year: i64) -> bool {
+    if year < 0 {
+        panic!()
+    }
+
+    (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
+}
+
 pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
     timestamp: i64,
 ) -> Result<String, TimestampError> {
@@ -93,6 +101,14 @@ mod tests {
     use crate::Instant;
 
     use super::*;
+
+    #[test]
+    fn is_leap_year_test() {
+        let f = is_leap_year;
+        assert!(f(2000));
+        assert!(f(2004));
+        assert!(!f(2100));
+    }
 
     #[test]
     fn ordinal_date_from_days_from_ce_test() {
