@@ -74,6 +74,12 @@ pub(crate) fn days_from_ce_from_year(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
+pub(crate) fn days_from_unix_epoch_from_date(date: (i64, i64, i64)) -> i64 {
+    let ordinal_date = ordinal_date_from_date(date);
+    let days_from_ce = days_from_ce_from_ordinal_date(ordinal_date);
+    days_from_ce - DAYS_FROM_CE_TO_UNIX_EPOCH
+}
+
 pub(crate) fn is_leap_year(year: i64) -> bool {
     if year < 0 {
         panic!()
@@ -274,6 +280,28 @@ mod tests {
     #[test]
     fn days_from_ce_from_ordinal_date_test() {
         // See: ordinal_date_from_days_from_ce_test
+    }
+
+    #[test]
+    fn days_from_unix_epoch_from_date_test() -> anyhow::Result<()> {
+        let f = |y: i64, m: i64, d: i64| days_from_unix_epoch_from_date((y, m, d));
+        let g = |y: i64, m: i64, d: i64| {
+            chrono::NaiveDate::from_ymd(y as i32, m as u32, d as u32)
+                .and_hms(0, 0, 0)
+                .timestamp()
+                / SECONDS_PER_DAY
+        };
+        for y in 1970..=9999 {
+            for m in 1..=12 {
+                let d = if is_leap_year(y) {
+                    [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+                } else {
+                    [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+                }[(m - 1) as usize];
+                assert_eq!(f(y, m, d), g(y, m, d));
+            }
+        }
+        Ok(())
     }
 
     #[test]
