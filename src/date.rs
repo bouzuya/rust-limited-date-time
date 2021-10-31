@@ -5,6 +5,11 @@ mod ordinal_date;
 mod year;
 mod year_month;
 
+use crate::private::days_from_unix_epoch_from_date;
+use crate::Days;
+
+use std::convert::TryFrom;
+
 pub use self::day_of_month::{DayOfMonth, ParseDayOfMonthError};
 pub use self::day_of_year::*;
 pub use self::month::{Month, ParseMonthError};
@@ -117,6 +122,18 @@ impl Date {
                 Date::from_ymd(self.year(), self.month(), next_day_of_month).ok()
             })
         }
+    }
+
+    // UTC における Date と見なして 1970-01-01 からの経過日数を返す
+    pub(crate) fn days_from_unix_epoch(&self) -> Days {
+        let days_from_unix_epoch = days_from_unix_epoch_from_date((
+            i64::from(self.year()),
+            i64::from(self.month()),
+            i64::from(self.day_of_month()),
+        ));
+        let days_from_unix_epoch_as_u32 =
+            u32::try_from(days_from_unix_epoch).expect("Date unix epoch is [0, 2_932_896]");
+        Days::from(days_from_unix_epoch_as_u32)
     }
 }
 
@@ -311,6 +328,23 @@ mod tests {
             Some(Date::from_str("9999-02-01")?)
         );
         assert_eq!(Date::from_str("9999-12-31")?.succ(), None);
+        Ok(())
+    }
+
+    #[test]
+    fn days_from_unix_epoch_test() -> anyhow::Result<()> {
+        assert_eq!(
+            Date::from_str("1970-01-01")?.days_from_unix_epoch(),
+            Days::from(0)
+        );
+        assert_eq!(
+            Date::from_str("1970-01-02")?.days_from_unix_epoch(),
+            Days::from(1)
+        );
+        assert_eq!(
+            Date::from_str("9999-12-31")?.days_from_unix_epoch(),
+            Days::from(2_932_896)
+        );
         Ok(())
     }
 }
