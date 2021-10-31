@@ -11,6 +11,11 @@ const DAYS_PER_100_YEARS: i64 = DAYS_PER_4_YEARS * 25 - 1;
 
 const DAYS_PER_400_YEARS: i64 = DAYS_PER_100_YEARS * 4 + 1;
 
+const SECONDS_PER_DAY: i64 = 24 * 60 * 60;
+
+// (days_from_ce_from_year(1969) + 1) * SECONDS_PER_DAY;
+const SECONDS_FROM_CE_TO_UNIX_EPOCH: i64 = 62_135_683_200_i64;
+
 #[derive(Debug, Error)]
 #[error("timestamp error")]
 pub struct TimestampError;
@@ -45,10 +50,9 @@ pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64
 pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
     seconds_from_unix_epoch: i64,
 ) -> Result<String, TimestampError> {
-    let seconds_from_ce_to_unix_epoch = (days_from_ce_from_year(1969) + 1) * 86_400;
-    let seconds_from_ce = seconds_from_unix_epoch + seconds_from_ce_to_unix_epoch;
-    let days_from_ce = seconds_from_ce / 86_400;
-    let seconds_from_midnight = seconds_from_ce % 86_400;
+    let seconds_from_ce = seconds_from_unix_epoch + SECONDS_FROM_CE_TO_UNIX_EPOCH;
+    let days_from_ce = seconds_from_ce / SECONDS_PER_DAY;
+    let seconds_from_midnight = seconds_from_ce % SECONDS_PER_DAY;
     let ordinal_date = ordinal_date_from_days_from_ce(days_from_ce);
     let (hour, minute, second) = time_from_seconds_from_midnight(seconds_from_midnight);
     let (year, month, day_of_month) = date_from_ordinal_date(ordinal_date);
@@ -111,7 +115,7 @@ pub(crate) fn seconds_from_midnight_from_time((h, min, s): (i64, i64, i64)) -> i
 }
 
 pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
-    if !(0..86_400).contains(&seconds) {
+    if !(0..SECONDS_PER_DAY).contains(&seconds) {
         panic!()
     }
     let s = seconds % 60;
@@ -155,6 +159,40 @@ mod tests {
     fn const_days_per_400_years_test() {
         assert_eq!(DAYS_PER_400_YEARS, DAYS_PER_100_YEARS * 4 + 1);
         assert_eq!(DAYS_PER_400_YEARS, 146_097_i64);
+    }
+
+    #[test]
+    fn const_seconds_per_day_test() {
+        assert_eq!(SECONDS_PER_DAY, 24 * 60 * 60);
+        assert_eq!(SECONDS_PER_DAY, 86_400_i64);
+    }
+
+    #[test]
+    fn const_seconds_from_ce_to_unix_epoch_test() -> anyhow::Result<()> {
+        // JavaScript
+        // new Date('0000-12-31T00:00:00Z').getTime() - new Date('0000-12-31T00:00:00Z').getTime()
+        // // => 0
+        let days_from_ce =
+            i64::from(chrono::NaiveDateTime::from_str("0000-12-31T00:00:00")?.num_days_from_ce());
+        assert_eq!(days_from_ce, 0);
+        let seconds_from_ce = days_from_ce * SECONDS_PER_DAY;
+        assert_eq!(seconds_from_ce, 0);
+
+        // new Date('1970-01-01T00:00:00Z').getTime() - new Date('0000-12-31T00:00:00Z').getTime()
+        // // => 62135683200000
+        let days_from_ce_to_unix_epoch =
+            i64::from(chrono::NaiveDateTime::from_str("1970-01-01T00:00:00")?.num_days_from_ce());
+        assert_eq!(days_from_ce_to_unix_epoch, 719_163_i64);
+        let seconds_from_ce_to_unix_epoch = days_from_ce_to_unix_epoch * SECONDS_PER_DAY;
+        assert_eq!(seconds_from_ce_to_unix_epoch, 62_135_683_200_i64);
+
+        assert_eq!(SECONDS_FROM_CE_TO_UNIX_EPOCH, seconds_from_ce_to_unix_epoch);
+        assert_eq!(
+            SECONDS_FROM_CE_TO_UNIX_EPOCH,
+            (days_from_ce_from_year(1969) + 1) * SECONDS_PER_DAY
+        );
+        assert_eq!(SECONDS_FROM_CE_TO_UNIX_EPOCH, 62_135_683_200_i64);
+        Ok(())
     }
 
     #[test]
