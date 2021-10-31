@@ -1,8 +1,8 @@
 use std::convert::TryFrom;
 
 use crate::{
-    private::days_from_ce_from_year, Date, DayOfMonth, DayOfYear, Days, Month, ParseDayOfYearError,
-    ParseYearError, Year, YearMonth,
+    private::days_from_ce_from_ordinal_date, Date, DayOfMonth, DayOfYear, Days, Month,
+    ParseDayOfYearError, ParseYearError, Year, YearMonth,
 };
 
 use thiserror::Error;
@@ -81,11 +81,15 @@ impl OrdinalDate {
         }
     }
 
+    // UTC における OrdinalDate と見なして 0000-01-01 からの経過日数を返す
     pub(crate) fn days_from_ce(self) -> Days {
-        Days::from(
-            (days_from_ce_from_year(i64::from(u16::from(self.year) - 1))
-                + i64::from(u16::from(self.day_of_year))) as u32,
-        )
+        let year = i64::from(self.year);
+        let day_of_year = i64::from(self.day_of_year);
+        let ordinal_date = (year, day_of_year);
+        let days_from_ce = days_from_ce_from_ordinal_date(ordinal_date);
+        let days_from_ce_as_u32 =
+            u32::try_from(days_from_ce).expect("days_from_ce_from_ordinal_date is broken");
+        Days::from(days_from_ce_as_u32)
     }
 }
 
