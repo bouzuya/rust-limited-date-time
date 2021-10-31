@@ -23,7 +23,7 @@ pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64
         [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     };
     let mut days = 0;
-    for (index, days_of_month) in days_of_month_table.into_iter().enumerate() {
+    for (index, days_of_month) in days_of_month_table.iter().enumerate() {
         let month = index as i64 + 1;
         if day_of_year <= days + days_of_month {
             let day_of_month = day_of_year - days;
@@ -35,10 +35,19 @@ pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64
 }
 
 pub(crate) fn date_time_string_from_seconds_from_unix_epoch(
-    timestamp: i64,
+    seconds_from_unix_epoch: i64,
 ) -> Result<String, TimestampError> {
-    let naive_date_time = NaiveDateTime::from_timestamp(timestamp, 0);
-    Ok(format!("{:?}", naive_date_time))
+    let seconds_from_ce_to_unix_epoch = (days_from_ce_from_year(1969) + 1) * 86_400;
+    let seconds_from_ce = seconds_from_unix_epoch + seconds_from_ce_to_unix_epoch;
+    let days_from_ce = seconds_from_ce / 86_400;
+    let seconds_from_midnight = seconds_from_ce % 86_400;
+    let ordinal_date = ordinal_date_from_days_from_ce(days_from_ce);
+    let (hour, minute, second) = time_from_seconds_from_midnight(seconds_from_midnight);
+    let (year, month, day_of_month) = date_from_ordinal_date(ordinal_date);
+    Ok(format!(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}",
+        year, month, day_of_month, hour, minute, second
+    ))
 }
 
 pub(crate) fn seconds_from_unix_epoch_from_date_time_string(
@@ -159,12 +168,12 @@ mod tests {
     #[test]
     fn date_time_string_from_seconds_from_unix_epoch_test() -> anyhow::Result<()> {
         let f = date_time_string_from_seconds_from_unix_epoch;
-        let min_timestamp = u64::from(Instant::min()) as i64;
-        let max_timestamp = u64::from(Instant::max()) as i64;
+        let min_timestamp = 0_i64; // 1970-01-01T00:00:00Z
+        let max_timestamp = 253_402_300_799_i64; // 9999-12-31T23:59:59Z
         assert_eq!(f(min_timestamp - 1)?, "1969-12-31T23:59:59");
         assert_eq!(f(min_timestamp)?, "1970-01-01T00:00:00");
         assert_eq!(f(max_timestamp)?, "9999-12-31T23:59:59");
-        assert_eq!(f(max_timestamp + 1)?, "+10000-01-01T00:00:00");
+        assert_eq!(f(max_timestamp + 1)?, "10000-01-01T00:00:00");
         Ok(())
     }
 
