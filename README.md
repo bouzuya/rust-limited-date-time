@@ -77,3 +77,7 @@
 - `TimeZoneOffset::system_default` は実装しない
   - Rust の std の機能では実装できなさそう
   - chrono は libc で実装しているみたい
+- 依存の方向がわかりにくくなってきた
+  - ひとまず mod_deps.dot を作成した
+  - メンテナンスに失敗しそう
+  - 自動生成できると良さそう
