@@ -3,6 +3,14 @@ use std::str::FromStr;
 use chrono::NaiveDateTime;
 use thiserror::Error;
 
+const DAYS_PER_COMMON_YEAR: i64 = 365;
+
+const DAYS_PER_4_YEARS: i64 = DAYS_PER_COMMON_YEAR * 4 + 1;
+
+const DAYS_PER_100_YEARS: i64 = DAYS_PER_4_YEARS * 25 - 1;
+
+const DAYS_PER_400_YEARS: i64 = DAYS_PER_100_YEARS * 4 + 1;
+
 #[derive(Debug, Error)]
 #[error("timestamp error")]
 pub struct TimestampError;
@@ -75,21 +83,17 @@ pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
     }
 
     let d = d - 1;
-    let days_of_year = 365;
-    let days_of_4_years = days_of_year * 4 + 1;
-    let days_of_100_years = days_of_4_years * 25 - 1;
-    let days_of_400_years = days_of_100_years * 4 + 1;
-    let c400 = d / days_of_400_years;
-    let r400 = d % days_of_400_years;
-    let c100 = r400 / days_of_100_years;
-    let r100 = r400 % days_of_100_years;
-    let c4 = r100 / days_of_4_years;
-    let r4 = r100 % days_of_4_years;
-    let c1 = r4 / days_of_year;
-    let r1 = r4 % days_of_year;
+    let c400 = d / DAYS_PER_400_YEARS;
+    let r400 = d % DAYS_PER_400_YEARS;
+    let c100 = r400 / DAYS_PER_100_YEARS;
+    let r100 = r400 % DAYS_PER_100_YEARS;
+    let c4 = r100 / DAYS_PER_4_YEARS;
+    let r4 = r100 % DAYS_PER_4_YEARS;
+    let c1 = r4 / DAYS_PER_COMMON_YEAR;
+    let r1 = r4 % DAYS_PER_COMMON_YEAR;
     let is_leap = c100 == 4 || c1 == 4;
     let year = c400 * 400 + c100 * 100 + c4 * 4 + c1 + if is_leap { 0 } else { 1 };
-    let day_of_year = if is_leap { days_of_year } else { r1 } + 1;
+    let day_of_year = if is_leap { DAYS_PER_COMMON_YEAR } else { r1 } + 1;
     (year, day_of_year)
 }
 
@@ -129,6 +133,29 @@ mod tests {
     use crate::Instant;
 
     use super::*;
+
+    #[test]
+    fn const_days_per_common_year_test() {
+        assert_eq!(DAYS_PER_COMMON_YEAR, 365_i64);
+    }
+
+    #[test]
+    fn const_days_per_4_years_test() {
+        assert_eq!(DAYS_PER_4_YEARS, DAYS_PER_COMMON_YEAR * 4 + 1);
+        assert_eq!(DAYS_PER_4_YEARS, 1_461_i64);
+    }
+
+    #[test]
+    fn const_days_per_100_years_test() {
+        assert_eq!(DAYS_PER_100_YEARS, DAYS_PER_4_YEARS * 25 - 1);
+        assert_eq!(DAYS_PER_100_YEARS, 36_524_i64);
+    }
+
+    #[test]
+    fn const_days_per_400_years_test() {
+        assert_eq!(DAYS_PER_400_YEARS, DAYS_PER_100_YEARS * 4 + 1);
+        assert_eq!(DAYS_PER_400_YEARS, 146_097_i64);
+    }
 
     #[test]
     fn date_from_ordinal_date_test() {
