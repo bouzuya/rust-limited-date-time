@@ -1,10 +1,10 @@
-use crate::{Date, ParseDateError, ParseTimeError, Time};
+use crate::{CalendarDate, ParseDateError, ParseTimeError, Time};
 
 use thiserror::Error;
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct DateTime {
-    date: Date,
+    date: CalendarDate,
     time: Time,
 }
 
@@ -21,15 +21,15 @@ pub enum ParseDateTimeError {
 }
 
 impl DateTime {
-    pub fn from_date_time(date: Date, time: Time) -> Self {
+    pub fn from_date_time(date: CalendarDate, time: Time) -> Self {
         Self { date, time }
     }
 
-    pub fn new(date: Date, time: Time) -> Self {
+    pub fn new(date: CalendarDate, time: Time) -> Self {
         Self { date, time }
     }
 
-    pub fn date(&self) -> Date {
+    pub fn date(&self) -> CalendarDate {
         self.date
     }
 
@@ -51,7 +51,7 @@ impl std::str::FromStr for DateTime {
         if s.len() != 19 {
             return Err(Self::Err::InvalidLength);
         }
-        let date = Date::from_str(&s[0..10]).map_err(ParseDateTimeError::ParseDate)?;
+        let date = CalendarDate::from_str(&s[0..10]).map_err(ParseDateTimeError::ParseDate)?;
         if s.as_bytes().get(10) != Some(&b'T') {
             return Err(Self::Err::InvalidFormat);
         }
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn from_date_time_test() -> anyhow::Result<()> {
-        let date = Date::from_str("2021-02-03")?;
+        let date = CalendarDate::from_str("2021-02-03")?;
         let time = Time::from_str("04:05:06")?;
         assert_eq!(
             DateTime::from_date_time(date, time),
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn new_test() -> anyhow::Result<()> {
-        let date = Date::from_str("2021-02-03")?;
+        let date = CalendarDate::from_str("2021-02-03")?;
         let time = Time::from_str("04:05:06")?;
         assert_eq!(
             DateTime::new(date, time),
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn date_test() -> anyhow::Result<()> {
         let date_time = DateTime::from_str("2021-02-03T04:05:06")?;
-        assert_eq!(date_time.date(), Date::from_str("2021-02-03")?);
+        assert_eq!(date_time.date(), CalendarDate::from_str("2021-02-03")?);
         Ok(())
     }
 

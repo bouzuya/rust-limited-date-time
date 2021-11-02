@@ -7,6 +7,7 @@ digraph {
     subgraph cluster0 {
       label = "crate::date::"
       date
+      calendar_date
       day_of_month
       day_of_year
       month
@@ -56,11 +57,12 @@ digraph {
   days -> seconds
 
   // crate::*
-  date -> day_of_month
-  date -> days
-  date -> month
-  date -> year
-  date -> year_month
+  date -> calendar_date
+  calendar_date -> day_of_month
+  calendar_date -> days
+  calendar_date -> month
+  calendar_date -> year
+  calendar_date -> year_month
   date_time -> date
   date_time -> time
   instant -> date_time
@@ -70,7 +72,7 @@ digraph {
   offset_date_time -> instant
   offset_date_time -> ordinal_date
   offset_date_time -> time_zone_offset
-  ordinal_date -> date
+  ordinal_date -> calendar_date
   ordinal_date -> day_of_month
   ordinal_date -> day_of_year
   ordinal_date -> days

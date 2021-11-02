@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use crate::{
-    private::days_from_ce_from_ordinal_date, Date, DayOfMonth, DayOfYear, Days, Month,
+    private::days_from_ce_from_ordinal_date, CalendarDate, DayOfMonth, DayOfYear, Days, Month,
     ParseDayOfYearError, ParseYearError, Year, YearMonth,
 };
 
@@ -115,8 +115,8 @@ impl std::str::FromStr for OrdinalDate {
     }
 }
 
-impl From<Date> for OrdinalDate {
-    fn from(date: Date) -> Self {
+impl From<CalendarDate> for OrdinalDate {
+    fn from(date: CalendarDate) -> Self {
         let year = date.year();
         let mut days = 0_u16;
         // TODO: impl Iterator for Range<Month>
@@ -133,7 +133,7 @@ impl From<Date> for OrdinalDate {
     }
 }
 
-impl From<OrdinalDate> for Date {
+impl From<OrdinalDate> for CalendarDate {
     fn from(ordinal_date: OrdinalDate) -> Self {
         let year = ordinal_date.year();
         let day_of_year = u16::from(ordinal_date.day_of_year());
@@ -149,7 +149,7 @@ impl From<OrdinalDate> for Date {
                 let day_of_month = u8::try_from(day_of_year - days).expect("day_of_year - days");
                 let day_of_month =
                     DayOfMonth::try_from(day_of_month).expect("DayOfMonth::try_from");
-                return Date::from_ymd(year, month, day_of_month)
+                return CalendarDate::from_ymd(year, month, day_of_month)
                     .expect("From<OrdinalDate> for Date");
             }
             days += days_of_month;
@@ -205,20 +205,20 @@ mod tests {
     #[test]
     fn date_conversion_test() -> anyhow::Result<()> {
         assert_eq!(
-            OrdinalDate::from(Date::from_str("2021-01-01")?),
+            OrdinalDate::from(CalendarDate::from_str("2021-01-01")?),
             OrdinalDate::from_str("2021-001")?
         );
         assert_eq!(
-            Date::from(OrdinalDate::from(Date::from_str("2021-01-01")?)),
-            Date::from_str("2021-01-01")?,
+            CalendarDate::from(OrdinalDate::from(CalendarDate::from_str("2021-01-01")?)),
+            CalendarDate::from_str("2021-01-01")?,
         );
         assert_eq!(
-            OrdinalDate::from(Date::from_str("2021-12-31")?),
+            OrdinalDate::from(CalendarDate::from_str("2021-12-31")?),
             OrdinalDate::from_str("2021-365")?
         );
         assert_eq!(
-            Date::from(OrdinalDate::from(Date::from_str("2021-12-31")?)),
-            Date::from_str("2021-12-31")?,
+            CalendarDate::from(OrdinalDate::from(CalendarDate::from_str("2021-12-31")?)),
+            CalendarDate::from_str("2021-12-31")?,
         );
         Ok(())
     }
