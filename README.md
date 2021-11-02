@@ -2,7 +2,7 @@
 
 ## モジュール間の依存関係
 
-![mod_deps](https://user-images.githubusercontent.com/1221346/139586164-33e0c7a4-e173-4c44-81fe-49c70355b5c7.png)
+![mod_deps 0.16.0](https://user-images.githubusercontent.com/1221346/139870635-4b1442c1-5e81-4a7f-95a3-da9176fdaf20.png)
 
 ## 実装メモ
 
