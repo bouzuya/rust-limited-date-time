@@ -67,7 +67,7 @@ pub(crate) fn days_from_ce_from_ordinal_date((year, day_of_year): (i64, i64)) ->
     days_from_ce_from_year(year - 1) + day_of_year
 }
 
-pub(crate) fn days_from_ce_from_year(y: i64) -> i64 {
+fn days_from_ce_from_year(y: i64) -> i64 {
     y * 365 + y / 4 - y / 100 + y / 400
 }
 
@@ -77,7 +77,7 @@ pub(crate) fn days_from_unix_epoch_from_date(date: (i64, i64, i64)) -> i64 {
     days_from_ce - DAYS_FROM_CE_TO_UNIX_EPOCH
 }
 
-pub(crate) fn is_leap_year(year: i64) -> bool {
+fn is_leap_year(year: i64) -> bool {
     if year < 0 {
         panic!()
     }
@@ -85,7 +85,7 @@ pub(crate) fn is_leap_year(year: i64) -> bool {
     (year % 400 == 0) || ((year % 100 != 0) && (year % 4 == 0))
 }
 
-pub(crate) fn ordinal_date_from_date((year, month, day_of_month): (i64, i64, i64)) -> (i64, i64) {
+fn ordinal_date_from_date((year, month, day_of_month): (i64, i64, i64)) -> (i64, i64) {
     let days_of_month_table = if is_leap_year(year) {
         [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     } else {
@@ -98,7 +98,7 @@ pub(crate) fn ordinal_date_from_date((year, month, day_of_month): (i64, i64, i64
     (year, day_of_year)
 }
 
-pub(crate) fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
+fn ordinal_date_from_days_from_ce(d: i64) -> (i64, i64) {
     if d <= 0 {
         panic!()
     }
@@ -131,7 +131,7 @@ pub(crate) fn seconds_from_midnight_from_time((h, min, s): (i64, i64, i64)) -> i
     (h * 60 + min) * 60 + s
 }
 
-pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
+fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
     if !(0..SECONDS_PER_DAY).contains(&seconds) {
         panic!()
     }
