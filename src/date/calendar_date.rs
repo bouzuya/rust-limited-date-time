@@ -4,7 +4,9 @@ use crate::Days;
 use std::convert::TryFrom;
 
 use super::day_of_month::{DayOfMonth, ParseDayOfMonthError};
+use super::day_of_year::DayOfYear;
 use super::month::{Month, ParseMonthError};
+use super::ordinal_date::OrdinalDate;
 use super::year::{ParseYearError, Year};
 use super::year_month::{ParseYearMonthError, YearMonth};
 use thiserror::Error;
@@ -167,6 +169,49 @@ impl std::str::FromStr for CalendarDate {
             month: year_month.month(),
             day_of_month,
         })
+    }
+}
+
+impl From<CalendarDate> for OrdinalDate {
+    fn from(date: CalendarDate) -> Self {
+        let year = date.year();
+        let mut days = 0_u16;
+        // TODO: impl Iterator for Range<Month>
+        for m in u8::from(Month::january())..u8::from(date.month()) {
+            let m = Month::try_from(m).unwrap();
+            let year_month = YearMonth::new(year, m);
+            days += u16::try_from(u32::from(year_month.days()))
+                .expect("sum of year_month.days() in year <= 366");
+        }
+        days += u16::from(date.day_of_month());
+        let day_of_year =
+            DayOfYear::try_from(days).expect("sum of year_month.days() in year <= 366");
+        OrdinalDate::new(year, day_of_year).expect("CalendarDate is broken")
+    }
+}
+
+impl From<OrdinalDate> for CalendarDate {
+    fn from(ordinal_date: OrdinalDate) -> Self {
+        let year = ordinal_date.year();
+        let day_of_year = u16::from(ordinal_date.day_of_year());
+        let mut days = 0_u16;
+        // TODO: impl Iterator for Range<Month>
+        for m in u8::from(Month::january())..=u8::from(Month::december()) {
+            let m = Month::try_from(m).unwrap();
+            let year_month = YearMonth::new(year, m);
+            let days_of_month = u16::try_from(u32::from(year_month.days()))
+                .expect("sum of year_month.days() in year <= 366");
+            if day_of_year <= days + days_of_month {
+                let month = m;
+                let day_of_month = u8::try_from(day_of_year - days).expect("day_of_year - days");
+                let day_of_month =
+                    DayOfMonth::try_from(day_of_month).expect("DayOfMonth::try_from");
+                return CalendarDate::from_ymd(year, month, day_of_month)
+                    .expect("From<OrdinalDate> for Date");
+            }
+            days += days_of_month;
+        }
+        unreachable!()
     }
 }
 
@@ -343,6 +388,27 @@ mod tests {
         assert_eq!(
             CalendarDate::from_str("9999-12-31")?.days_from_unix_epoch(),
             Days::from(2_932_896)
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn date_conversion_test() -> anyhow::Result<()> {
+        assert_eq!(
+            OrdinalDate::from(CalendarDate::from_str("2021-01-01")?),
+            OrdinalDate::from_str("2021-001")?
+        );
+        assert_eq!(
+            CalendarDate::from(OrdinalDate::from(CalendarDate::from_str("2021-01-01")?)),
+            CalendarDate::from_str("2021-01-01")?,
+        );
+        assert_eq!(
+            OrdinalDate::from(CalendarDate::from_str("2021-12-31")?),
+            OrdinalDate::from_str("2021-365")?
+        );
+        assert_eq!(
+            CalendarDate::from(OrdinalDate::from(CalendarDate::from_str("2021-12-31")?)),
+            CalendarDate::from_str("2021-12-31")?,
         );
         Ok(())
     }
