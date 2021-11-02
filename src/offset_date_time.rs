@@ -1,11 +1,8 @@
 use std::{convert::TryFrom, str::FromStr};
 
 use crate::{
-    private::{
-        date_time_string_from_seconds_from_unix_epoch,
-        seconds_from_unix_epoch_from_date_time_string,
-    },
-    DateTime, Instant, ParseDateTimeError, ParseTimeZoneOffsetError, TimeZoneOffset,
+    private::date_time_string_from_seconds_from_unix_epoch, DateTime, Instant, ParseDateTimeError,
+    ParseTimeZoneOffsetError, TimeZoneOffset,
 };
 
 use thiserror::Error;
@@ -110,14 +107,15 @@ impl From<Instant> for OffsetDateTime {
 
 impl From<OffsetDateTime> for Instant {
     fn from(offset_date_time: OffsetDateTime) -> Self {
-        // FIXME:
-        let local_timestamp = seconds_from_unix_epoch_from_date_time_string(
-            offset_date_time.date_time().to_string().as_str(),
-        )
-        .unwrap();
-        let offset_in_seconds = offset_date_time.offset().offset_in_minutes() as i64 * 60;
-        let utc_timestamp = local_timestamp - offset_in_seconds;
-        Instant::try_from(utc_timestamp).expect("OffsetDateTime is broken")
+        let date_time = offset_date_time.date_time();
+        let time_zone_offset = offset_date_time.offset();
+        let days_from_unix_epoch = date_time.date().days_from_unix_epoch();
+        let seconds_from_midnight = date_time.time().seconds_from_midnight();
+        let seconds_from_unix_epoch = i64::from(u32::from(days_from_unix_epoch)) * 86400
+            + i64::try_from(u64::from(seconds_from_midnight))
+                .expect("seconds_from_midnight is [0, 86400)")
+            - i64::from(time_zone_offset.offset_in_minutes()) * 60;
+        Instant::try_from(seconds_from_unix_epoch).expect("OffsetDateTime is broken")
     }
 }
 

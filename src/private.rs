@@ -1,6 +1,3 @@
-use std::str::FromStr;
-
-use chrono::NaiveDateTime;
 use thiserror::Error;
 
 // days_from_ce_from_year(1969) + 1)
@@ -29,7 +26,7 @@ const SECONDS_FROM_CE_TO_UNIX_EPOCH: i64 = DAYS_FROM_CE_TO_UNIX_EPOCH * SECONDS_
 #[error("timestamp error")]
 pub struct TimestampError;
 
-pub(crate) fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64) {
+fn date_from_ordinal_date(ordinal_date: (i64, i64)) -> (i64, i64, i64) {
     let (year, day_of_year) = ordinal_date;
     let days_of_month_table = if is_leap_year(year) {
         [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -134,14 +131,6 @@ pub(crate) fn seconds_from_midnight_from_time((h, min, s): (i64, i64, i64)) -> i
     (h * 60 + min) * 60 + s
 }
 
-pub(crate) fn seconds_from_unix_epoch_from_date_time_string(
-    date_time_string: &str,
-) -> Result<i64, TimestampError> {
-    Ok(NaiveDateTime::from_str(date_time_string)
-        .map_err(|_| TimestampError)?
-        .timestamp())
-}
-
 pub(crate) fn time_from_seconds_from_midnight(seconds: i64) -> (i64, i64, i64) {
     if !(0..SECONDS_PER_DAY).contains(&seconds) {
         panic!()
@@ -164,21 +153,7 @@ mod tests {
 
     use chrono::{Datelike, Timelike};
 
-    use crate::Instant;
-
     use super::*;
-
-    // #[test]
-    // fn WIP_seconds_from_unix_epoch_from_date_time_string_test() -> anyhow::Result<()> {
-    //     let f = seconds_from_unix_epoch_from_date_time_string;
-    //     let min_timestamp = u64::from(Instant::min()) as i64;
-    //     let max_timestamp = u64::from(Instant::max()) as i64;
-    //     assert_eq!(f("1969-12-31T23:59:59")?, min_timestamp - 1);
-    //     assert_eq!(f("1970-01-01T00:00:00")?, min_timestamp);
-    //     assert_eq!(f("9999-12-31T23:59:59")?, max_timestamp);
-    //     assert_eq!(f("+10000-01-01T00:00:00")?, max_timestamp + 1);
-    //     Ok(())
-    // }
 
     #[test]
     fn const_days_from_ce_to_unix_epoch_test() -> anyhow::Result<()> {
@@ -380,18 +355,6 @@ mod tests {
             assert_eq!(t1, t2);
             assert_eq!(seconds_from_midnight_from_time(t2), s);
         }
-    }
-
-    #[test]
-    fn seconds_from_unix_epoch_from_date_time_string_test() -> anyhow::Result<()> {
-        let f = seconds_from_unix_epoch_from_date_time_string;
-        let min_timestamp = u64::from(Instant::min()) as i64;
-        let max_timestamp = u64::from(Instant::max()) as i64;
-        assert_eq!(f("1969-12-31T23:59:59")?, min_timestamp - 1);
-        assert_eq!(f("1970-01-01T00:00:00")?, min_timestamp);
-        assert_eq!(f("9999-12-31T23:59:59")?, max_timestamp);
-        assert_eq!(f("+10000-01-01T00:00:00")?, max_timestamp + 1);
-        Ok(())
     }
 
     #[test]
