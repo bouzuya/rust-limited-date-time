@@ -43,7 +43,7 @@ impl YearMonth {
     }
 
     pub fn days(&self) -> Days {
-        Days::from(u32::from(u8::from(self.last_day_of_month())))
+        Days::from(u8::from(self.last_day_of_month()))
     }
 
     pub fn first_day_of_month(&self) -> DayOfMonth {
@@ -259,10 +259,10 @@ mod tests {
 
     #[test]
     fn days_test() -> anyhow::Result<()> {
-        assert_eq!(YearMonth::from_str("2000-01")?.days(), Days::from(31));
-        assert_eq!(YearMonth::from_str("2000-02")?.days(), Days::from(29));
-        assert_eq!(YearMonth::from_str("2001-02")?.days(), Days::from(28));
-        assert_eq!(YearMonth::from_str("2000-04")?.days(), Days::from(30));
+        assert_eq!(YearMonth::from_str("2000-01")?.days(), Days::from(31_u8));
+        assert_eq!(YearMonth::from_str("2000-02")?.days(), Days::from(29_u8));
+        assert_eq!(YearMonth::from_str("2001-02")?.days(), Days::from(28_u8));
+        assert_eq!(YearMonth::from_str("2000-04")?.days(), Days::from(30_u8));
         Ok(())
     }
 

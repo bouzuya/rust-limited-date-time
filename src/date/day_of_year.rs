@@ -25,7 +25,7 @@ impl DayOfYear {
     }
 
     pub fn days(&self) -> Days {
-        Days::from(1)
+        Days::from(1_u8)
     }
 
     pub fn pred(&self) -> Option<Self> {
@@ -372,20 +372,20 @@ mod tests {
         let d1 = DayOfYear::try_from(1)?;
         let d2 = DayOfYear::try_from(2)?;
         let d366 = DayOfYear::try_from(366)?;
-        assert_eq!(d1 + Days::from(0), d1);
-        assert_eq!(d1 + Days::from(1), d2);
-        assert_eq!(d1 + Days::from(365), d366);
+        assert_eq!(d1 + Days::from(0_u16), d1);
+        assert_eq!(d1 + Days::from(1_u16), d2);
+        assert_eq!(d1 + Days::from(365_u16), d366);
         // should_panic
         // assert_eq!(d1 + Days::from(366), d31);
-        assert_eq!(Days::from(0) + d1, d1);
-        assert_eq!(Days::from(1) + d1, d2);
-        assert_eq!(Days::from(365) + d1, d366);
+        assert_eq!(Days::from(0_u16) + d1, d1);
+        assert_eq!(Days::from(1_u16) + d1, d2);
+        assert_eq!(Days::from(365_u16) + d1, d366);
         Ok(())
     }
 
     #[test]
     fn days_test() -> anyhow::Result<()> {
-        assert_eq!(DayOfYear::try_from(1)?.days(), Days::from(1));
+        assert_eq!(DayOfYear::try_from(1)?.days(), Days::from(1_u16));
         Ok(())
     }
 }

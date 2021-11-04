@@ -127,8 +127,8 @@ impl CalendarDate {
             i64::from(self.day_of_month()),
         ));
         let days_from_unix_epoch_as_u32 =
-            u32::try_from(days_from_unix_epoch).expect("Date unix epoch is [0, 2_932_896]");
-        Days::from(days_from_unix_epoch_as_u32)
+            u32::try_from(days_from_unix_epoch).expect("days from unix epoch is [0, 2_932_896]");
+        Days::try_from(days_from_unix_epoch_as_u32).expect("Days supports [0, 2_932_896]")
     }
 }
 
@@ -379,15 +379,15 @@ mod tests {
     fn days_from_unix_epoch_test() -> anyhow::Result<()> {
         assert_eq!(
             CalendarDate::from_str("1970-01-01")?.days_from_unix_epoch(),
-            Days::from(0)
+            Days::from(0_u8)
         );
         assert_eq!(
             CalendarDate::from_str("1970-01-02")?.days_from_unix_epoch(),
-            Days::from(1)
+            Days::from(1_u8)
         );
         assert_eq!(
             CalendarDate::from_str("9999-12-31")?.days_from_unix_epoch(),
-            Days::from(2_932_896)
+            Days::try_from(2_932_896_u32)?
         );
         Ok(())
     }

@@ -8,7 +8,7 @@ pub struct DayOfMonth(u8);
 
 impl DayOfMonth {
     pub fn days(&self) -> Days {
-        Days::from(1)
+        Days::from(1_u8)
     }
 
     pub fn pred(&self) -> Option<Self> {
@@ -343,20 +343,20 @@ mod tests {
         let d1 = DayOfMonth::try_from(1)?;
         let d2 = DayOfMonth::try_from(2)?;
         let d31 = DayOfMonth::try_from(31)?;
-        assert_eq!(d1 + Days::from(0), d1);
-        assert_eq!(d1 + Days::from(1), d2);
-        assert_eq!(d1 + Days::from(30), d31);
+        assert_eq!(d1 + Days::from(0_u16), d1);
+        assert_eq!(d1 + Days::from(1_u16), d2);
+        assert_eq!(d1 + Days::from(30_u16), d31);
         // should_panic
         // assert_eq!(d1 + Days::from(31), d31);
-        assert_eq!(Days::from(0) + d1, d1);
-        assert_eq!(Days::from(1) + d1, d2);
-        assert_eq!(Days::from(30) + d1, d31);
+        assert_eq!(Days::from(0_u16) + d1, d1);
+        assert_eq!(Days::from(1_u16) + d1, d2);
+        assert_eq!(Days::from(30_u16) + d1, d31);
         Ok(())
     }
 
     #[test]
     fn days_test() -> anyhow::Result<()> {
-        assert_eq!(DayOfMonth::try_from(1)?.days(), Days::from(1));
+        assert_eq!(DayOfMonth::try_from(1)?.days(), Days::from(1_u16));
         Ok(())
     }
 }

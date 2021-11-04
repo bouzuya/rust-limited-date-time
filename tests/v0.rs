@@ -14,7 +14,7 @@ fn use_case_offset_date_time_plus_days() -> anyhow::Result<()> {
         };
 
     let offset_date_time = OffsetDateTime::from_str("2021-02-03T04:05:06+09:00")?;
-    let days = Days::from(2);
+    let days = Days::from(2_u8);
     let updated_offset_date_time = plus_days(offset_date_time, days)?;
     assert_eq!(
         updated_offset_date_time.to_string(),
@@ -110,10 +110,10 @@ fn use_case_offset_date_time_next_month() -> anyhow::Result<()> {
 
 #[test]
 fn use_case_get_days() -> anyhow::Result<()> {
-    assert_eq!(DayOfMonth::from_str("03")?.days(), Days::from(1));
+    assert_eq!(DayOfMonth::from_str("03")?.days(), Days::from(1_u16));
     // Month::days is not supported
-    assert_eq!(YearMonth::from_str("2021-02")?.days(), Days::from(28));
-    assert_eq!(Year::from_str("2021")?.days(), Days::from(365));
+    assert_eq!(YearMonth::from_str("2021-02")?.days(), Days::from(28_u16));
+    assert_eq!(Year::from_str("2021")?.days(), Days::from(365_u16));
     // Date::days is not supported (yet?)
 
     // TODO: date range -> days

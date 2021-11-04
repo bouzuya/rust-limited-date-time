@@ -20,7 +20,11 @@ impl Year {
     }
 
     pub fn days(&self) -> Days {
-        Days::from(if self.is_leap_year() { 366 } else { 365 })
+        Days::from(if self.is_leap_year() {
+            366_u16
+        } else {
+            365_u16
+        })
     }
 
     pub fn pred(&self) -> Option<Self> {
@@ -318,8 +322,8 @@ mod tests {
 
     #[test]
     fn days_test() -> anyhow::Result<()> {
-        assert_eq!(Year::from_str("2000")?.days(), Days::from(366));
-        assert_eq!(Year::from_str("2001")?.days(), Days::from(365));
+        assert_eq!(Year::from_str("2000")?.days(), Days::from(366_u16));
+        assert_eq!(Year::from_str("2001")?.days(), Days::from(365_u16));
         Ok(())
     }
 }
